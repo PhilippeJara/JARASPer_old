@@ -4,28 +4,38 @@
 #include <QCoreApplication>
 
 Component::Component(unsigned short val, unsigned short bts) { value = val; bits = bts; }
-void Component::assign(Component a) { value = a.value;}
-void Component::assign(Component a, int valMod) { value = a.value + valMod; }
-void Component::assign(unsigned int val) { value = val; }
+void Component::assign(Component a) { value = a.value;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+}
+void Component::assign(Component a, int valMod) { value = a.value + valMod;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+}
+void Component::assign(unsigned int val) { value = val;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+}
 
 GeneralPurposeRegister::GeneralPurposeRegister(unsigned short val, unsigned short bts):Component(val, bts){value = val; bits = bts;type = 0;}
 
 MemoryAdressRegister::MemoryAdressRegister(unsigned short val, unsigned short bts):Component(val, bts){value = val; bits = bts;type = 1;}
 void MemoryAdressRegister::assignToMemory( std::string mem[], unsigned short val) {
-    QString temp = format_value(val);
-    std::cout <<"CHEGUEI"<< std::endl;
-   // std::cout <<temp.toStdString()<< std::endl;
-    //char temp[100];
-    //itoa(val,temp ,16);
-    mem[value] = temp.toStdString();
-    //for(int i = 0; i<10; i++){
-   // std::cout <<mem[i]<< std::endl;
-   // }
-    window->update_mem(value);
+  QString temp = format_value(val);
+  mem[value] = temp.toStdString();
+  window->update_mem(value);
 } //sÃ³ MDR
 
 MemoryDataRegister:: MemoryDataRegister(unsigned short val, unsigned short bts):Component(val, bts){value = val; bits = bts;type = 2;}
-void MemoryDataRegister::assignFromMemory( std::string mem[], unsigned short memoryAddr) { value = std::stoi(mem[memoryAddr],nullptr, 16); } //sÃ³ M[MAR]/ /MAR
+void MemoryDataRegister::assignFromMemory( std::string mem[], unsigned short memoryAddr) {
+  value = std::stoi(mem[memoryAddr],nullptr, 16);
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+} //sÃ³ M[MAR]/ /MAR
 
 StackPointer::StackPointer(unsigned short val, unsigned short bts):Component(val, bts){value = val; bits = bts; type = 3;}
 
@@ -57,6 +67,13 @@ void ALU::add() {
   std::cout << negative << std::endl;
   r = toTwoComp(temp, x->bits);
   value = r;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+  this->window->setZero(this->zero);
+  this->window->setEqual(this->equal);
+  this->window->setNegative(this->negative);
+  this->window->setOverflow(this->overflow);
 }
 void ALU::sub() {
   int temp = 0;
@@ -68,11 +85,36 @@ void ALU::sub() {
   std::cout << equal << std::endl;
   r = toTwoComp(temp, x->bits);
   value = r;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+  this->window->setZero(this->zero);
+  this->window->setEqual(this->equal);
+  this->window->setNegative(this->negative);
+  this->window->setOverflow(this->overflow);
 }
 // void ALU::bitShiftL(){x-> value += + pow(2,(x->value));}
-void ALU::bitShiftL(unsigned int val){r = x->value * pow(2,val); value = r;}
+void ALU::bitShiftL(unsigned int val){r = x->value * pow(2,val);
+  value = r;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+  this->window->setZero(this->zero);
+  this->window->setEqual(this->equal);
+  this->window->setNegative(this->negative);
+  this->window->setOverflow(this->overflow);
+}
 //  void ALU::bitShiftR(Component a){value = value - 2^(a.value);}
-void ALU::bitShiftR(unsigned int val){r = x->value /  pow(2,val); value = r;}
+void ALU::bitShiftR(unsigned int val){r = x->value /  pow(2,val);
+  value = r;
+  this->display->setText(QString::number(value,16));
+  this->display->setStyleSheet("border: 2px solid green");
+  this->window->setDisplay(this);
+  this->window->setZero(this->zero);
+  this->window->setEqual(this->equal);
+  this->window->setNegative(this->negative);
+  this->window->setOverflow(this->overflow);
+}
 
 ComponentList::ComponentList(GeneralPurposeRegister &ap,GeneralPurposeRegister &bp,ProgramCounter &pcp,Incrementer &incp,StackPointer &spp,InstructionRegister &irp,MemoryAdressRegister &marp,MemoryDataRegister &mdrp,GeneralPurposeRegister &ALUxp, GeneralPurposeRegister &ALUyp, ALU &alup, ControlUnit &cup){
   a = &ap;
@@ -181,34 +223,34 @@ int checkEqual(int val1, int val2) {
 
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-      A(0,BITSVAL),B(0,BITSVAL), ALUx(0,BITSVAL), ALUy(0,BITSVAL),
-      MAR(0,BITSVAL),
-      MDR(0,BITSVAL),
-      SP(0,BITSVAL),
-      PC(0,BITSVAL),
-      INC(0,BITSVAL),
-      IR(0,BITSVAL),
-      alu(&ALUx, &ALUy),
-      CU(0,BITSVAL),
-      cl(A, B, PC, INC, SP, IR, MAR, MDR, ALUx, ALUy, alu, CU),
-    ui(new Ui::MainWindow)
+  QMainWindow(parent),
+  A(0,BITSVAL),B(0,BITSVAL), ALUx(0,BITSVAL), ALUy(0,BITSVAL),
+  MAR(0,BITSVAL),
+  MDR(0,BITSVAL),
+  SP(0,BITSVAL),
+  PC(0,BITSVAL),
+  INC(0,BITSVAL),
+  IR(0,BITSVAL),
+  alu(&ALUx, &ALUy),
+  CU(0,BITSVAL),
+  cl(A, B, PC, INC, SP, IR, MAR, MDR, ALUx, ALUy, alu, CU),
+  ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-    loadOpcode(opcode,"");
-     opcodeCount = parseAllOpcodes(opcode,Dopcode);
-    memCount = loadMem(mem,"");
-     clean_gui();
-     update_all_gui();
-     for (int i=0; i<MEMSIZE; i++){
-         ui->MEMORY_VIEW->addItem(QString::number(i,16)+ "\t" +  QString::fromStdString(mem[i]));
-     std::cout << mem[i] <<std::endl;
-         ui->MEMORY_VIEW->item(i)->setFlags(ui->MEMORY_VIEW->item(i)->flags() | Qt::ItemIsEditable);
-     }
-     //for (int i=0; i<MEMSIZE; i++){ui->MEMORY_DISPLAY->setText(ui->MEMORY_VIEW +"\n" + QString::fromStdString(mem[i]));}
-    for (int i=0; i<MEMSIZE; i++){ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));}
-     for (int i=0; i<opcodeCount; i++){ui->OPCODE_DISPLAY->setText(ui->OPCODE_DISPLAY->toPlainText() +"\n" + QString::fromStdString(opcode[i][0]));}
-   }
+  ui->setupUi(this);
+  loadOpcode(opcode,"");
+  opcodeCount = parseAllOpcodes(opcode,Dopcode);
+  memCount = loadMem(mem,"");
+  clean_gui();
+  update_all_components();
+  for (int i=0; i<MEMSIZE; i++){
+    ui->MEMORY_VIEW->addItem(QString::number(i,16)+ "\t" +  QString::fromStdString(mem[i]));
+    std::cout << mem[i] <<std::endl;
+    ui->MEMORY_VIEW->item(i)->setFlags(ui->MEMORY_VIEW->item(i)->flags() | Qt::ItemIsEditable);
+  }
+  //for (int i=0; i<MEMSIZE; i++){ui->MEMORY_DISPLAY->setText(ui->MEMORY_VIEW +"\n" + QString::fromStdString(mem[i]));}
+  for (int i=0; i<MEMSIZE; i++){ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));}
+  for (int i=0; i<opcodeCount; i++){ui->OPCODE_DISPLAY->setText(ui->OPCODE_DISPLAY->toPlainText() +"\n" + QString::fromStdString(opcode[i][0]));}
+}
 
 QString format_value(unsigned int x){
 
@@ -219,7 +261,7 @@ QString format_value(unsigned int x){
   return QString::number(x,BITSVAL);
 }
 
-void MainWindow::setDisplay(Component x){x.display->setText(format_value(x.value));}
+void MainWindow::setDisplay(Component *x){x->display->setText(format_value(x->value));}
 void MainWindow::setA(unsigned int x){ui->A_DISPLAY->setText(format_value(x));}
 void MainWindow::setB(unsigned int x){ui->B_DISPLAY->setText(format_value(x));}
 void MainWindow::setALUx(unsigned int x){ui->ALUx_DISPLAY->setText(format_value(x));}
@@ -238,7 +280,7 @@ void MainWindow::setEqual(unsigned int x){ui->EQUAL_DISPLAY->setText(QString::nu
 void MainWindow::setNegative(unsigned int x){ui->NEGATIVE_DISPLAY->setText(QString::number(x,16));}
 MainWindow::~MainWindow()
 {
-    delete ui;
+  delete ui;
 }
 
 
@@ -250,31 +292,48 @@ void loadOpcode(std::string opcode[MAXOPCODE][MAXMICROC], std::string path){
   while(getline ( opload, opcode[i][j]) && opcode[i][j] != "" && i < MAXOPCODE && j < MAXMICROC){
     if (opcode[i][j].at(0) != ';'){
       if(opcode[i][j].at(0)=='('){open = 1;}
-    if(opcode[i][j].at(0)==')'){close = 1;}
-    if (open==1){
-      j++;
-      if(close == 1){
-    i++;
-    j=0;
-    open = 0;
-    close = 0;
+      if(opcode[i][j].at(0)==')'){close = 1;}
+      if (open==1){
+	j++;
+	if(close == 1){
+	  i++;
+	  j=0;
+	  open = 0;
+	  close = 0;
+	}
       }
     }
   }
-}
 }
 int loadMem(std::string mem[MEMSIZE], std::string path) {
   int i = 0, temp = 0;
   std::ifstream memload;
 
+  for (int init = 0; init < MEMSIZE; init++){mem[init] = "0000";}
   if (path == ""){memload.open(MEM_LOAD_STD);}else{memload.open(path);}
   if (!memload.is_open()) { std::cout << "erro abrindo o arquivo de memÃ³ria" <<path<< std::endl; return 0; }
   while (i < MEMSIZE && getline(memload, mem[i])) {
     if (mem[i].at(0) != ';') { i++; }
   }
-  temp = i;
-  while (i < MEMSIZE){mem[i] = "0000";i++;}
-  return temp;
+  int orgJmp = 0;
+  for(int j = 0;j<=i;j++){
+    if(mem[j].substr(0,3) == "org"){
+      //std::cout<<"CHEGUEI 1:"<<mem[j].substr(4)<<"        "<< stoi(mem[j].substr(4), nullptr, 16)<<"   "<<j<<std::endl;
+      int k = i-j;
+      orgJmp = stoi(mem[j].substr(4), nullptr, 16);
+      mem[j] = "0000";
+      while(k > 0){
+	mem[orgJmp+k-1] = mem[j+k]; mem[j+k] = "0000";
+	k--;
+      }
+    }
+  }
+  //i = orgJmp+i;
+  //  i=0;
+  //  while (i < MEMSIZE){
+  //      if(mem[i] == ""){mem[i]= "0000";}
+  //      i++;}
+  return 0;
 }
 
 
@@ -299,89 +358,89 @@ std::string parseOpcodeLine(std::string opcodeLine, std::string Dopcode[MAXMICRO
     if (opcodeLine == ""){break;}
     else{
       if(opcodeLine.at(i) == '<' && opcodeLine.at(i+1) == '-' ){
-    oper = 1;
-    UAtom1 = opcodeLine.substr(0,i);
-    LAtom2 = parseOpcodeLine(opcodeLine.substr(i+2,opcodeLine.length()-1),Dopcode, lastIndx);
-    if(LAtom2 == "end"){
-      LAtom2 = opcodeLine.substr(i+2,opcodeLine.length()-1);
-    }
-    Dopcode[lastIndx] ="00";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	oper = 1;
+	UAtom1 = opcodeLine.substr(0,i);
+	LAtom2 = parseOpcodeLine(opcodeLine.substr(i+2,opcodeLine.length()-1),Dopcode, lastIndx);
+	if(LAtom2 == "end"){
+	  LAtom2 = opcodeLine.substr(i+2,opcodeLine.length()-1);
+	}
+	Dopcode[lastIndx] ="00";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == '<' && opcodeLine.at(i+1) == '<'){
-    oper = 2;
-    UAtom1 = opcodeLine.substr(0,i);
-    LAtom2 = parseOpcodeLine(opcodeLine.substr(i+2,opcodeLine.length()-1), Dopcode, lastIndx);
-    if(LAtom2 == "end"){
-      LAtom2 = opcodeLine.substr(i+2,opcodeLine.length()-1);
-    }
-    Dopcode[lastIndx] ="01";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	oper = 2;
+	UAtom1 = opcodeLine.substr(0,i);
+	LAtom2 = parseOpcodeLine(opcodeLine.substr(i+2,opcodeLine.length()-1), Dopcode, lastIndx);
+	if(LAtom2 == "end"){
+	  LAtom2 = opcodeLine.substr(i+2,opcodeLine.length()-1);
+	}
+	Dopcode[lastIndx] ="01";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == '>' && opcodeLine.at(i+1) == '>'){
         oper = 3;
         UAtom1 = opcodeLine.substr(0,i);
-    LAtom2 = parseOpcodeLine(opcodeLine.substr(i+2,opcodeLine.length()-1), Dopcode, lastIndx);
-    if(LAtom2 == "end"){
-      LAtom2 = opcodeLine.substr(i+2,opcodeLine.length()-1);
-    }
-    Dopcode[lastIndx] ="02";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	LAtom2 = parseOpcodeLine(opcodeLine.substr(i+2,opcodeLine.length()-1), Dopcode, lastIndx);
+	if(LAtom2 == "end"){
+	  LAtom2 = opcodeLine.substr(i+2,opcodeLine.length()-1);
+	}
+	Dopcode[lastIndx] ="02";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == '+'){
         oper = 4;
         UAtom1 = opcodeLine.substr(0,i);
-    LAtom2 = parseOpcodeLine(opcodeLine.substr(i+1,opcodeLine.length()-1), Dopcode, lastIndx);
-    if(LAtom2 == "end"){
-      LAtom2 = opcodeLine.substr(i+1,opcodeLine.length()-1);
-    }
-    Dopcode[lastIndx] ="03";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	LAtom2 = parseOpcodeLine(opcodeLine.substr(i+1,opcodeLine.length()-1), Dopcode, lastIndx);
+	if(LAtom2 == "end"){
+	  LAtom2 = opcodeLine.substr(i+1,opcodeLine.length()-1);
+	}
+	Dopcode[lastIndx] ="03";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == '-'){
         oper = 5;
         UAtom1 = opcodeLine.substr(0,i);
-    LAtom2 = parseOpcodeLine(opcodeLine.substr(i+1,opcodeLine.length()-1), Dopcode, lastIndx);
-    if(LAtom2 == "end"){
-      LAtom2 = opcodeLine.substr(i+1,opcodeLine.length()-1);
-    }
-    Dopcode[lastIndx] ="04";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	LAtom2 = parseOpcodeLine(opcodeLine.substr(i+1,opcodeLine.length()-1), Dopcode, lastIndx);
+	if(LAtom2 == "end"){
+	  LAtom2 = opcodeLine.substr(i+1,opcodeLine.length()-1);
+	}
+	Dopcode[lastIndx] ="04";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == '='){ //?
         oper = 6;
         UAtom1 = opcodeLine.substr(0,i);
-    LAtom2 = parseOpcodeLine(opcodeLine.substr(i+1,opcodeLine.length()-1), Dopcode, lastIndx);
-    if(LAtom2 == "end"){
-      LAtom2 = opcodeLine.substr(i+1,opcodeLine.length()-1);
-    }
-    Dopcode[lastIndx] ="05";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	LAtom2 = parseOpcodeLine(opcodeLine.substr(i+1,opcodeLine.length()-1), Dopcode, lastIndx);
+	if(LAtom2 == "end"){
+	  LAtom2 = opcodeLine.substr(i+1,opcodeLine.length()-1);
+	}
+	Dopcode[lastIndx] ="05";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == 'i' && opcodeLine.at(i+1) == 'f'){
         oper = 7;
         UAtom1 = opcodeLine.substr(3,opcodeLine.find('=')-3);
-    LAtom2 = opcodeLine.substr(opcodeLine.find('=')+2, opcodeLine.length());
-    Dopcode[lastIndx] ="06";
-    Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
-    lastIndx++;
-    return UAtom1;
+	LAtom2 = opcodeLine.substr(opcodeLine.find('=')+2, opcodeLine.length());
+	Dopcode[lastIndx] ="06";
+	Dopcode[lastIndx] =Dopcode[lastIndx] + '(' + UAtom1 + ',' + LAtom2 + ')';
+	lastIndx++;
+	return UAtom1;
       }
       if(opcodeLine.at(i) == 'H' && opcodeLine.at(i+1) == 'A' && opcodeLine.at(i+2) == 'L' && opcodeLine.at(i+3) == 'T'){
-    Dopcode[lastIndx] ="07";
-    lastIndx++;
+	Dopcode[lastIndx] ="07";
+	lastIndx++;
       }
       i++;
     }
@@ -401,52 +460,52 @@ int executeOpcode(int indx,std::string Dopcode[][MAXMICROC],int opcodeCount, Com
       //    cl.getComponent(comp1)->assign(std::stoi(comp2.substr(1, comp2.length()),nullptr, 16));
       //    flag = 1;}
       if (comp2.at(0) == '/') {
-    comp2 = comp2.substr(1, comp2.length() - 1);
-    if (cl.getComponent(comp2)->type == 1) {//Pegar na memoria o valor, no indice rep pelo valor de comp1
-      cl.getMdr(comp1)->assignFromMemory(memory, cl.getComponent(comp2)->value);
-      componente = comp1;
-      flag = 1;
-      //goto nxt;
-    }
-    if (cl.getComponent(comp2)->type == 5) {
-      int opc = cl.getComponent(comp2)->value / pow(16, (EXPONENT - 2));
-      std::cout << opc << std::endl;
-      cl.getComponent(comp1)->assign(opc);
-      componente = comp1;
-      flag = 1;
-    }
+	comp2 = comp2.substr(1, comp2.length() - 1);
+	if (cl.getComponent(comp2)->type == 1) {//Pegar na memoria o valor, no indice rep pelo valor de comp1
+	  cl.getMdr(comp1)->assignFromMemory(memory, cl.getComponent(comp2)->value);
+	  componente = comp1;
+	  flag = 1;
+	  //goto nxt;
+	}
+	if (cl.getComponent(comp2)->type == 5) {
+	  int opc = cl.getComponent(comp2)->value / pow(16, (EXPONENT - 2));
+	  std::cout << opc << std::endl;
+	  cl.getComponent(comp1)->assign(opc);
+	  componente = comp1;
+	  flag = 1;
+	}
       }
       if (comp2.at(0) == '\'') {
-    comp2 = comp2.substr(1, comp2.length() - 1);
-    if (cl.getComponent(comp2)->type == 5) {
-      int MSB = cl.getComponent(comp2)->value / pow(2, (cl.getComponent(comp2)->bits) / 2);
-      int MSBEND = (cl.getComponent(comp2)->value - (MSB * pow(2, (cl.getComponent(comp2)->bits) / 2)));
-      cl.getComponent(comp1)->assign(MSBEND);
+	comp2 = comp2.substr(1, comp2.length() - 1);
+	if (cl.getComponent(comp2)->type == 5) {
+	  int MSB = cl.getComponent(comp2)->value / pow(2, (cl.getComponent(comp2)->bits) / 2);
+	  int MSBEND = (cl.getComponent(comp2)->value - (MSB * pow(2, (cl.getComponent(comp2)->bits) / 2)));
+	  cl.getComponent(comp1)->assign(MSBEND);
 
 
-      flag = 1;
-    }
+	  flag = 1;
+	}
       }
       if (comp1.at(0) == '/'){
-          if(cl.getComponent(comp1.substr(1, comp1.length() - 1))->type == 1 && cl.getComponent(comp2)->type == 2){
+	if(cl.getComponent(comp1.substr(1, comp1.length() - 1))->type == 1 && cl.getComponent(comp2)->type == 2){
           comp1 = comp1.substr(1, comp1.length() - 1);
           cl.getMar(comp1)->assignToMemory(memory, cl.getComponent(comp2)->value);
           flag = 1;
+	}
       }
-          }
       if (cl.getComponent(comp1)->type == 6) {
-    cl.getComponent(comp1)->assign(cl.getComponent(comp2)->value + 1);
-    flag = 1;
+	cl.getComponent(comp1)->assign(cl.getComponent(comp2)->value + 1);
+	flag = 1;
       }
       if (flag != 1) {
-    if (cl.getComponent(comp2)->type == 8) {
-      std::cout << (cl.getAlu(comp2))->r << std::endl;
-      cl.getComponent(comp1)->assign((cl.getAlu(comp2))->r);
-      std::cout << cl.getComponent(comp1)->value << std::endl;
-    }
-    else {
-      cl.getComponent(comp1)->assign(*cl.getComponent(comp2));
-    }
+	if (cl.getComponent(comp2)->type == 8) {
+	  std::cout << (cl.getAlu(comp2))->r << std::endl;
+	  cl.getComponent(comp1)->assign((cl.getAlu(comp2))->r);
+	  std::cout << cl.getComponent(comp1)->value << std::endl;
+	}
+	else {
+	  cl.getComponent(comp1)->assign(*cl.getComponent(comp2));
+	}
       }
       componente = comp1;
     }
@@ -455,7 +514,7 @@ int executeOpcode(int indx,std::string Dopcode[][MAXMICROC],int opcodeCount, Com
       std::string comp1  = Dopcode[indx][i].substr(Dopcode[indx][i].find('(')+1,Dopcode[indx][i].find(',') -(Dopcode[indx][i].find('(') + 1));
       if (cl.getComponent(comp1)->type != 8){std::cout << "Tipo Incorreto  " <<comp1 << "<<" << comp2 << std::endl; break;}
       if (comp2.at(0) =='$'){
-    cl.getAlu(comp1)->bitShiftL(std::stoi(comp2.substr(1, comp2.length()),nullptr, 16));}
+	cl.getAlu(comp1)->bitShiftL(std::stoi(comp2.substr(1, comp2.length()),nullptr, 16));}
       else{cl.getAlu(comp1)->bitShiftL(cl.getComponent(comp2)->value);}
       componente = comp1;
     }
@@ -464,7 +523,7 @@ int executeOpcode(int indx,std::string Dopcode[][MAXMICROC],int opcodeCount, Com
       std::string comp1  = Dopcode[indx][i].substr(Dopcode[indx][i].find('(')+1,Dopcode[indx][i].find(',') -(Dopcode[indx][i].find('(') + 1));
       if (cl.getComponent(comp1)->type != 8){std::cout << "Tipo Incorreto  " <<comp1 << "<<" << comp2 << std::endl; break;}
       if (comp2.at(0) =='$'){
-    cl.getAlu(comp1)->bitShiftR(std::stoi(comp2.substr(1, comp2.length()),nullptr, 16));}
+	cl.getAlu(comp1)->bitShiftR(std::stoi(comp2.substr(1, comp2.length()),nullptr, 16));}
       else{cl.getAlu(comp1)->bitShiftR(cl.getComponent(comp2)->value);}
       componente = comp1;
     }
@@ -473,36 +532,39 @@ int executeOpcode(int indx,std::string Dopcode[][MAXMICROC],int opcodeCount, Com
     if (Dopcode[indx][i].at(0) == '0' && Dopcode[indx][i].at(1)  == '5'){} //X = Y ??
     if (Dopcode[indx][i].at(0) == '0' && Dopcode[indx][i].at(1)  == '6'){ //if(PSRx == Y) somente utilizar em flags
       if (Dopcode[indx][i].at(6) == 'v'){
-    std::cout << cl.alu->overflow << "     " << Dopcode[indx][i].at(8) << std::endl;
-    if (cl.alu->overflow != Dopcode[indx][i].at(8) - '0'){return 1;}
+	std::cout << cl.alu->overflow << "     " << Dopcode[indx][i].at(8) << std::endl;
+	if (cl.alu->overflow != Dopcode[indx][i].at(8) - '0'){return 1;}
       }
       if (Dopcode[indx][i].at(6) == 'z'){
-    //std::cout << cl.alu->zero << "     " << Dopcode[indx][i].at(8) << std::endl;
-    if (cl.alu->zero != Dopcode[indx][i].at(8) - '0'){return 1;}
+	//std::cout << cl.alu->zero << "     " << Dopcode[indx][i].at(8) << std::endl;
+	if (cl.alu->zero != Dopcode[indx][i].at(8) - '0'){return 1;}
       }
       if (Dopcode[indx][i].at(6) == 'n'){
-    std::cout << (cl.alu->negative == Dopcode[indx][i].at(8)-'0') << std::endl;
-    if (cl.alu->negative != Dopcode[indx][i].at(8)-'0'){return 1;}
+	std::cout << (cl.alu->negative == Dopcode[indx][i].at(8)-'0') << std::endl;
+	if (cl.alu->negative != Dopcode[indx][i].at(8)-'0'){return 1;}
       }
       if (Dopcode[indx][i].at(6) == 'e'){
-    std::cout << cl.alu->equal << "     " << (Dopcode[indx][i].at(8) -'0') << std::endl;
-    if (cl.alu->equal != Dopcode[indx][i].at(8) - '0'){return 1;}
+	std::cout << cl.alu->equal << "     " << (Dopcode[indx][i].at(8) -'0') << std::endl;
+	if (cl.alu->equal != Dopcode[indx][i].at(8) - '0'){return 1;}
       }
     }
-    if (Dopcode[indx][i].at(0) == '0' && Dopcode[indx][i].at(1)  == '7'){return 2;}
+    if (Dopcode[indx][i].at(0) == '0' && Dopcode[indx][i].at(1)  == '7'){
+      return 2;}
     flag = 0;
 
+    
 
-    cl.cu->window->clean_gui();
-    cl.cu->window->update_gui(componente);
+    //cl.cu->window->clean_gui();
+    // cl.cu->window->update_gui(componente);
     qApp->processEvents();
     QThread::msleep(100);
+    cl.cu->window->clean_gui();
   }
   return 0;
 }
 
 void fetch(std::string memory[], std::string Dopcodes[][MAXMICROC], int opcodeCount, ComponentList cl){
-    executeOpcode(0, Dopcodes, opcodeCount, cl, memory);
+  executeOpcode(0, Dopcodes, opcodeCount, cl, memory);
 }
 void executeMemory(std::string memory[], std::string Dopcodes[][MAXMICROC], int opcodeCount, ComponentList cl){
   while(1!=0){
@@ -514,32 +576,32 @@ void executeMemory(std::string memory[], std::string Dopcodes[][MAXMICROC], int 
 void MainWindow::on_MEM_GO_clicked(){
   cl.reset_values();
   clean_gui();
-  reset_gui_values();
+  reset_all_comp_values();
   executeMemory(mem,Dopcode,opcodeCount ,cl);
 }
-void MainWindow::update_gui(std::string comp){
-  QString propiedades = "border: 2px solid green";
-  if (comp == ""){return;}
-  if (comp == "ALUr" || comp == "ALU"){
-    ALU *current = cl.getAlu(comp);
-    cl.getComponent(comp)->display->setStyleSheet(propiedades);
-    setDisplay(*cl.getComponent(comp));
-    //std:: << "zero flag" << cl.getAlu(comp)->zero << std::endl;
-    //cl.getComponent(comp)->window->ui->DEBUG_DISPLAY->setText(QString::number(cl.alu->zero));
-    //cl.alu->window->ui->DEBUG_DISPLAY->setText(QString::number(cl.alu->zero,16));
-    setZero(current->zero);
-    //std::cout << "equal flag" << current->equal << std::endl;
-    setEqual(current->equal);
-    setNegative(current->negative);
-    setOverflow(current->overflow);
-  }else{
-    cl.getComponent(comp)->display->setStyleSheet(propiedades);
-    setDisplay(*cl.getComponent(comp));
-  }
-}
-void MainWindow::reset_gui_values(){
+//void MainWindow::update_gui(std::string comp){
+//  QString propiedades = "border: 2px solid green";
+//  if (comp == ""){return;}
+//  if (comp == "ALUr" || comp == "ALU"){
+//    ALU *current = cl.getAlu(comp);
+//    cl.getComponent(comp)->display->setStyleSheet(propiedades);
+//    setDisplay(cl.getComponent(comp));
+//    //std:: << "zero flag" << cl.getAlu(comp)->zero << std::endl;
+//    //cl.getComponent(comp)->window->ui->DEBUG_DISPLAY->setText(QString::number(cl.alu->zero));
+//    //cl.alu->window->ui->DEBUG_DISPLAY->setText(QString::number(cl.alu->zero,16));
+//    setZero(current->zero);
+//    //std::cout << "equal flag" << current->equal << std::endl;
+//    setEqual(current->equal);
+//    setNegative(current->negative);
+//    setOverflow(current->overflow);
+//  }else{
+//    cl.getComponent(comp)->display->setStyleSheet(propiedades);
+//    setDisplay(cl.getComponent(comp));
+//  }
+//}
+void MainWindow::reset_all_comp_values(){
   cl.reset_values();
-  update_all_gui();
+  update_all_components();
 }
 void MainWindow::clean_gui(){
   QString propiedades = "border: 1px solid grey";
@@ -562,15 +624,16 @@ void MainWindow::clean_gui(){
   ui->NEGATIVE_DISPLAY->setStyleSheet(propiedades);
 }
 void MainWindow::update_mem(unsigned short addr){
-    ui->MEMORY_VIEW->item(addr)->setText(QString::number(addr,16) + "\t"+  QString::fromStdString(mem[addr]));
-    std::cout << "addr:   " << addr << std::endl;
-    std::cout << "mem:   " << mem[addr] << std::endl;
-    ui->MEMORY_DISPLAY->setText("");
-    for (int i=0; i<MEMSIZE; i++){
-        ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));
-    }
-     }
-void MainWindow::update_all_gui(){
+  ui->MEMORY_VIEW->item(addr)->setText(QString::number(addr,16) + "\t"+  QString::fromStdString(mem[addr]));
+  ui->MEMORY_VIEW->item(addr)->setSelected(1);
+  //    std::cout << "addr:   " << addr << std::endl;
+  //    std::cout << "mem:   " << mem[addr] << std::endl;
+  //    ui->MEMORY_DISPLAY->setText("");
+  //for (int i=0; i<MEMSIZE; i++){
+  //  ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));
+  //}
+}
+void MainWindow::update_all_components(){
   setA(A.value);
   setB(B.value);
   setALUx(ALUx.value);
@@ -589,53 +652,51 @@ void MainWindow::update_all_gui(){
   setNegative(alu.negative);
 }
 void MainWindow::on_REPL_INPUT_returnPressed(){
-  if (this->ui->REPL_INPUT->text().length() != EXPONENT){this->ui->REPL_DISPLAY->append(this->ui->REPL_INPUT->text() +"    erro:Input deve ter exatamente " +EXPONENT+" numeros" "\n"); return;}
-  unsigned int input = this->ui->REPL_INPUT->text().toInt(nullptr, 16);
-  this->IR.value = input;
-  this->CU.value = input/pow(16,EXPONENT -2);
-  this->ui->REPL_DISPLAY->append(this->ui->REPL_INPUT->text() + ": " + QString::fromStdString(Dopcode[(int)(input/pow(16,EXPONENT -2))][0]));
-  this->update_all_gui();
-  this->ui->REPL_INPUT->setText("");
+  if (ui->REPL_INPUT->text().length() != EXPONENT){ui->REPL_DISPLAY->append(ui->REPL_INPUT->text() +"    erro:Input deve ter exatamente " +QString::number(EXPONENT,10)+" numeros (base 10)"+ "\n"); return;}
+  unsigned int input = ui->REPL_INPUT->text().toInt(nullptr, 16);
+  IR.value = input;
+  CU.value = input/pow(16,EXPONENT -2);
+  ui->REPL_DISPLAY->append(ui->REPL_INPUT->text() + ": " + QString::fromStdString(Dopcode[(int)(input/pow(16,EXPONENT -2))][0]));
+  //this->update_all_gui();
+  ui->REPL_INPUT->setText("");
   qApp->processEvents();
   executeOpcode(input/pow(16,EXPONENT -2),Dopcode,opcodeCount,cl,mem);
 }
 void MainWindow::on_CLEAR_BUTTON_clicked(){
-  reset_gui_values();
+  reset_all_comp_values();
   qApp->processEvents();
 }
 void MainWindow::on_MEM_LOCATION_returnPressed(){
 
-    memCount = loadMem(mem,(this->ui->MEM_LOCATION->text()).toStdString());
-    //std::cout << this->ui->MEM_LOCATION->text().toStdString() << std::endl;
-    clean_gui();
-    ui->MEMORY_DISPLAY->setText("");
-    for (int i=0; i<MEMSIZE; i++){
-        ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));
+  memCount = loadMem(mem,(ui->MEM_LOCATION->text()).toStdString());
+  //std::cout << this->ui->MEM_LOCATION->text().toStdString() << std::endl;
+  clean_gui();
+  ui->MEMORY_DISPLAY->setText("");
+  for (int i=0; i<MEMSIZE; i++){
+    ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));
     ui->MEMORY_VIEW->item(i)->setText(QString::number(i,16)+ "\t" +  QString::fromStdString(mem[i]));
-    }
+  }
 }
 void MainWindow::on_OPCODE_LOCATON_returnPressed(){
-    clean_gui();
-    ui->OPCODE_DISPLAY->setText("");
-    loadOpcode(opcode,(this->ui->OPCODE_LOCATON->text()).toStdString());
-    opcodeCount = parseAllOpcodes(opcode,Dopcode);
-    //std::cout << "parsed" << std::endl;
-    for (int i=0; i<opcodeCount; i++){ui->OPCODE_DISPLAY->setText(ui->OPCODE_DISPLAY->toPlainText() +"\n" + QString::fromStdString(opcode[i][0]));}
+  clean_gui();
+  ui->OPCODE_DISPLAY->setText("");
+  loadOpcode(opcode,(ui->OPCODE_LOCATON->text()).toStdString());
+  opcodeCount = parseAllOpcodes(opcode,Dopcode);
+  //std::cout << "parsed" << std::endl;
+  for (int i=0; i<opcodeCount; i++){ui->OPCODE_DISPLAY->setText(ui->OPCODE_DISPLAY->toPlainText() +"\n" + QString::fromStdString(opcode[i][0]));}
 }
 void MainWindow::on_MEM_FETCH_clicked(){
-    fetch(mem, Dopcode, opcodeCount, cl);
+  fetch(mem, Dopcode, opcodeCount, cl);
 }
 void MainWindow::on_MEM_EXECUTE_clicked(){
-    executeOpcode(CU.value, Dopcode, opcodeCount, cl, mem);
+  executeOpcode(CU.value, Dopcode, opcodeCount, cl, mem);
 }
-
-
 void MainWindow::on_MEMORY_VIEW_itemChanged(QListWidgetItem *item)
 {
-    /*PODE SER CASE SENSITIVE*/
-    //int indx= item->text().left(item->text().indexOf("\t")).toInt(nullptr,16);
-    mem[item->text().left(item->text().indexOf("\t")).toInt(nullptr,16)] = item->text().right(EXPONENT).toStdString();
-    std::cout <<"3:  "<<  mem[item->text().left(item->text().indexOf("\t")).toInt(nullptr,16)] << std::endl;
-    //item->setText(QString::number(indx,16)+ "\t" + item->text());
-    //for (int i=0; i<MEMSIZE; i++){ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));}
+  /*PODE SER CASE SENSITIVE*/
+  //int indx= item->text().left(item->text().indexOf("\t")).toInt(nullptr,16);
+  mem[item->text().left(item->text().indexOf("\t")).toInt(nullptr,16)] = item->text().right(EXPONENT).toStdString();
+  std::cout <<"3:  "<<  mem[item->text().left(item->text().indexOf("\t")).toInt(nullptr,16)] << std::endl;
+  //item->setText(QString::number(indx,16)+ "\t" + item->text());
+  //for (int i=0; i<MEMSIZE; i++){ui->MEMORY_DISPLAY->setText(ui->MEMORY_DISPLAY->toPlainText() +"\n" + QString::fromStdString(mem[i]));}
 }

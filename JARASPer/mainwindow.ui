@@ -459,7 +459,7 @@
    <widget class="QTextEdit" name="MEMORY_DISPLAY">
     <property name="geometry">
      <rect>
-      <x>590</x>
+      <x>1020</x>
       <y>30</y>
       <width>131</width>
       <height>421</height>
@@ -782,7 +782,7 @@
    <widget class="QListWidget" name="MEMORY_VIEW">
     <property name="geometry">
      <rect>
-      <x>1010</x>
+      <x>590</x>
       <y>30</y>
       <width>151</width>
       <height>421</height>
